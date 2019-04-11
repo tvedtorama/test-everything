@@ -1,0 +1,33 @@
+{
+  "name": "test-everything",
+  "version": "1.0.0",
+  "description": "Test some cool technologies",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --require ts-node/register $(find tests -name '*[!d.].ts') --watch --reporter landing"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tvedtorama/test-everything.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tvedtorama/test-everything/issues"
+  },
+  "dependencies": {
+    "@reactivex/ix-es5-cjs": "^2.3.5",
+    "@tensorflow/tfjs": "^1.0.4",
+    "mocha": "^5.2.0",
+    "monet": "^0.9.0",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.3.1",
+    "winston": "^3.2.1"
+  },
+  "homepage": "https://github.com/tvedtorama/test-everything#readme",
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.6",
+    "chai": "^4.2.0"
+  }
+}
