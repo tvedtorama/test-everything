@@ -3,6 +3,7 @@ typings
 node_modules
 build_node_modules
 testBuild
+coverage
 .idea
 dist
 .env
