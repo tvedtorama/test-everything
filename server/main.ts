@@ -9,7 +9,6 @@ export default () => {
 
 	app.use(correlator()) // Note: remember the paranthesis
 	app.post('/service', (req, res) => {
-		console.log("hi")
 		res.
 			json(correlationAwareService())
 // 			.
