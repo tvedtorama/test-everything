@@ -1,6 +1,10 @@
 # test-everything
 Test some cool technologies
 
+## TODOs
+
+* GraphQL Subscriptions (with SSE protocol?)
+* GraphQL stitching between two independant services
 
 ## Run Coverage With C8
 
