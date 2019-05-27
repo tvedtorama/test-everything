@@ -4,6 +4,11 @@ import { GraphQLSchema } from 'graphql';
 
 type IGraphQlReqType = express.Request & {files: any[], logs: {logs: any[]}}
 
+export interface IHouse {
+	address: string,
+	owner: string
+}
+
 export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess: TDataAccess}, TDataAccess>(apiUrlPath: string, schema: GraphQLSchema, router: express.Router) {
 
 	router.use(apiUrlPath, graphqlHTTP((req: IGraphQlReqType, res) =>
@@ -11,7 +16,7 @@ export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess
 			schema,
 			graphiql: true,
 			rootValue: {
-				house: {
+				house: <IHouse>{
 					address: "Hola Drive 10",
 					owner: "Mr Duck",
 				},
