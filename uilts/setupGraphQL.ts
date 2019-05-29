@@ -1,6 +1,8 @@
 import * as express from 'express'
 import * as graphqlHTTP from 'express-graphql'
 import { GraphQLSchema } from 'graphql';
+import { mergeSchemas } from 'graphql-tools';
+import {Maybe, Some} from 'monet'
 
 type IGraphQlReqType = express.Request & {files: any[], logs: {logs: any[]}}
 
@@ -25,8 +27,13 @@ export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess
 		})))
 }
 
-export const setupGraphQL = async (getSchema: () => Promise<GraphQLSchema>) => {
-	const schema = await getSchema()
+export const setupGraphQL = async (getSchema: () => Promise<GraphQLSchema>, otherSchema?: () => Promise<GraphQLSchema>) => {
+	const schema = await Some(await getSchema()).
+		map(async (schema) => otherSchema ?
+			mergeSchemas({schemas: [schema, await otherSchema()]}) :
+			Promise.resolve(schema)).
+		some()
+
 	const app = express()
 
 	const router = express.Router()

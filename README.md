@@ -16,3 +16,17 @@ tsc --skipLibCheck && c8 --exclude build/tests mocha build/tests/**/*.js
 ```
 curl -X POST http://127.0.0.1:3010/service --data '{"greeting":"Rabalderpuddding"}' --header "Content-Type: application/json" --header "x-correlation-id: yawadubla" -w "\n"
 ```
+
+
+## Do the graphql stitching
+
+
+Start plugin:
+```
+tsc && serverApp=graphQLPlugin port=2223 node index
+```
+
+Start core:
+```
+tsc && serverApp=graphQLRoot port=2222 node index
+```
