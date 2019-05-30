@@ -8,7 +8,8 @@ import { Maybe } from 'monet'
 const fetcher = async ({ query: queryDocument, variables, operationName, context }: FetcherOperation) => {
 	const realClientOperationName = Maybe.Some(queryDocument).
 		flatMap(doc => Maybe.fromUndefined(doc.definitions[0])).
-		map((def: OperationDefinitionNode) => def.name.value)
+		flatMap((def: OperationDefinitionNode) => Maybe.fromUndefined(def.name)).
+		map(name => name.value)
 	.orSome("N/A")
 
 	if (realClientOperationName !== "N/A")
