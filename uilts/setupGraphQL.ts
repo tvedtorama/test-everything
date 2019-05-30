@@ -11,7 +11,7 @@ export interface IHouse {
 	owner: string
 }
 
-export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess: TDataAccess}, TDataAccess>(apiUrlPath: string, schema: GraphQLSchema | DocumentNode, router: express.Router) {
+export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess: TDataAccess}, TDataAccess>(apiUrlPath: string, schema: GraphQLSchema, router: express.Router) {
 
 	router.use(apiUrlPath, graphqlHTTP((req: IGraphQlReqType, res) =>
 		(<graphqlHTTP.OptionsResult>{
@@ -45,7 +45,7 @@ export const setupGraphQL = async (schemas: ISchemaSet, resolvers: (schemaSet: I
 				schemas: schemaList,
 				resolvers: resolvers(schemas),
 			})) : Some(schemaList[0]).
-				map(schema => typeof schema === "string" ? parse(schema) : schema)).
+				map(schema => typeof schema === "string" ? makeExecutableSchema({typeDefs: schema}) : schema)).
 		some()
 
 	const app = express()
