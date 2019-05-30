@@ -1,7 +1,7 @@
 import * as express from 'express'
 import * as graphqlHTTP from 'express-graphql'
-import { GraphQLSchema } from 'graphql';
-import { mergeSchemas } from 'graphql-tools';
+import { GraphQLSchema, parse, DocumentNode } from 'graphql';
+import { mergeSchemas, IResolversParameter, makeExecutableSchema } from 'graphql-tools';
 import {Maybe, Some} from 'monet'
 
 type IGraphQlReqType = express.Request & {files: any[], logs: {logs: any[]}}
@@ -11,7 +11,7 @@ export interface IHouse {
 	owner: string
 }
 
-export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess: TDataAccess}, TDataAccess>(apiUrlPath: string, schema: GraphQLSchema, router: express.Router) {
+export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess: TDataAccess}, TDataAccess>(apiUrlPath: string, schema: GraphQLSchema | DocumentNode, router: express.Router) {
 
 	router.use(apiUrlPath, graphqlHTTP((req: IGraphQlReqType, res) =>
 		(<graphqlHTTP.OptionsResult>{
@@ -27,11 +27,25 @@ export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess
 		})))
 }
 
-export const setupGraphQL = async (getSchema: () => Promise<GraphQLSchema>, otherSchema?: () => Promise<GraphQLSchema>) => {
-	const schema = await Some(await getSchema()).
-		map(async (schema) => otherSchema ?
-			mergeSchemas({schemas: [schema, await otherSchema()]}) :
-			Promise.resolve(schema)).
+type ISupportedSchemas = string | GraphQLSchema
+
+interface ISchemaSet<T extends ISupportedSchemas | Promise<ISupportedSchemas> = ISupportedSchemas> {
+	[index: string]: T
+}
+
+export const resolveSchemas = (schemas: ISchemaSet<ISupportedSchemas | Promise<ISupportedSchemas>>): Promise<ISchemaSet> =>
+	Promise.all(Object.entries(schemas).map(async ([k, v]) => ({k, v: await Promise.resolve(v)}))).
+		then(resolvedSchemaList => resolvedSchemaList.reduce((x, y) => ({...x, [y.k]: y.v}), <ISchemaSet>{}))
+
+export const setupGraphQL = async (schemas: ISchemaSet, resolvers: (schemaSet: ISchemaSet) => IResolversParameter = () => ({})) => {
+
+	const schema = Some(Object.values(schemas)).
+		flatMap(schemaList => schemaList.length > 1 ?
+			Some(mergeSchemas({
+				schemas: schemaList,
+				resolvers: resolvers(schemas),
+			})) : Some(schemaList[0]).
+				map(schema => typeof schema === "string" ? parse(schema) : schema)).
 		some()
 
 	const app = express()
