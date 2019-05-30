@@ -4,7 +4,8 @@
   "description": "Test some cool technologies",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --require ts-node/register $(find tests -name '*[!d.].ts') --watch --reporter landing"
+    "test": "mocha --require ts-node/register $(find tests -name '*[!d.].ts') --watch --reporter landing",
+    "test-with-coverage": "tsc --skipLibCheck && c8 --exclude build/tests mocha build/tests/**/*.js"
   },
   "repository": {
     "type": "git",

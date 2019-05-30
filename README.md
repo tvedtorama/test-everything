@@ -8,8 +8,11 @@ Test some cool technologies
 
 ## Run Coverage With C8
 
-tsc --skipLibCheck && c8 --exclude build/tests mocha build/tests/**/*.js
+~~tsc --skipLibCheck && c8 --exclude build/tests mocha build/tests/**/*.js~~
 
+``npm run test-with-coverage``
+
+The resulting report is saved in `./coverage` (.gitignore)
 
 ## Curl the correlation service
 
