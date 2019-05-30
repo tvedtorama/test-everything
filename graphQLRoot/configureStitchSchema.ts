@@ -1,4 +1,4 @@
-import { makeRemoteExecutableSchema, introspectSchema, Operation } from 'graphql-tools';
+import { makeRemoteExecutableSchema, introspectSchema } from 'graphql-tools';
 import {default as Axios} from 'axios'
 import { print, GraphQLSchema, OperationDefinitionNode } from 'graphql'
 import { FetcherOperation } from 'graphql-tools/dist/stitching/makeRemoteExecutableSchema';
