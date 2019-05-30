@@ -1,6 +1,6 @@
 import { createSchema, IHouse } from './schema';
 import { setupGraphQL, resolveSchemas } from '../uilts/setupGraphQL';
-import { loadStitchSchema } from './loadStitchSchema';
+import { configureStitchSchema } from './configureStitchSchema';
 import { DocumentNode, GraphQLSchema } from 'graphql';
 import { IResolverOptions, IResolversParameter } from 'graphql-tools';
 
@@ -19,7 +19,7 @@ export default async () => {
 			extend type House {
 				mangle: BlabboResult
 			}`,
-		babboSchema: loadStitchSchema(),
+		babboSchema: configureStitchSchema(),
 	})
 
 	setupGraphQL(schemas, (schemas: MySchemaSetup) => (<IResolversParameter>{

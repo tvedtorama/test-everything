@@ -23,13 +23,13 @@ const fetcher = async ({ query: queryDocument, variables, operationName, context
 		},
 		{
 			headers: {
-				'Content-Type': 'application/json',
+				'Athentication': 'Bearer SECRET',
 			},
 		});
 	return fetchResult.data;
 }
 
-export const loadStitchSchema = async (): Promise<GraphQLSchema> => {
+export const configureStitchSchema = async (): Promise<GraphQLSchema> => {
 	const schema = makeRemoteExecutableSchema({
 		schema: await introspectSchema(fetcher),
 		fetcher,
