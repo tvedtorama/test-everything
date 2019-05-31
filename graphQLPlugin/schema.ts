@@ -20,19 +20,22 @@ const blabboResultSchema = new GraphQLObjectType({
 	}
 })
 
+const fieldConfig = {
+	args: <TypedInputFieldConfigMap<IMangleArgs>>{
+		hello: {type: GraphQLString}
+	},
+	type: blabboResultSchema,
+	resolve: ({house}, args: IMangleArgs) => <IBlabboResult>{
+		text: `Owner: ${house.owner} hello: ${args.hello}`,
+		num: args.hello.length,
+	}
+}
+
 const blabboSchema = new GraphQLObjectType<{house: IHouse}, {hable: () => null}>({
 	name: "BlabboQuery",
 	fields: () => ({
-		houseMangle: {
-			args: <TypedInputFieldConfigMap<IMangleArgs>>{
-				hello: {type: GraphQLString}
-			},
-			type: blabboResultSchema,
-			resolve: ({house}, args: IMangleArgs) => <IBlabboResult>{
-				text: `Owner: ${house.owner} hello: ${args.hello}`,
-				num: args.hello.length,
-			}
-		},
+		houseMangle: fieldConfig,
+		// addressLookup: fieldConfig,
 	})
 })
 
