@@ -24,12 +24,13 @@ const fetcher = async ({ query: queryDocument, variables, operationName, context
 		},
 		{
 			headers: {
-				'Athentication': 'Bearer SECRET',
+				'authorization': 'Bearer !!!SECRET!!!',
 			},
 		});
 	return fetchResult.data;
 }
 
+/** Downloads and compiles a remote schema for use with stitching */
 export const configureStitchSchema = async (): Promise<GraphQLSchema> => {
 	const schema = makeRemoteExecutableSchema({
 		schema: await introspectSchema(fetcher),
