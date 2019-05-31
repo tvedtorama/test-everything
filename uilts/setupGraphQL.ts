@@ -12,6 +12,11 @@ export interface IHouse {
 }
 
 export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess: TDataAccess}, TDataAccess>(apiUrlPath: string, schema: GraphQLSchema, router: express.Router) {
+	router.use(apiUrlPath, (req: IGraphQlReqType, _, next) => {
+		if (req.headers && req.headers.authorization)
+			console.log("Good, you know the secret: ", req.headers.authorization)
+		next()
+	})
 
 	router.use(apiUrlPath, graphqlHTTP((req: IGraphQlReqType, res) =>
 		(<graphqlHTTP.OptionsResult>{
