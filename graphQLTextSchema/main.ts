@@ -1,4 +1,4 @@
-import { setupGraphQL } from "../uilts/setupGraphQL";
+import { setupGraphQL } from "../utils/setupGraphQL";
 
 export default () => {
 	setupGraphQL({main: `type House {

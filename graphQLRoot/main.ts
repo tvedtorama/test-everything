@@ -1,5 +1,5 @@
 import { createSchema, IHouse } from './schema';
-import { setupGraphQL, resolveSchemas } from '../uilts/setupGraphQL';
+import { setupGraphQL, resolveSchemas } from '../utils/setupGraphQL';
 import { configureStitchSchema } from './configureStitchSchema';
 import { DocumentNode, GraphQLSchema } from 'graphql';
 import { IResolverOptions, IResolversParameter } from 'graphql-tools';

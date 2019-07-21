@@ -1,6 +1,6 @@
 import { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLFloat } from "graphql";
-import { TypedInputFieldConfigMap, TypedFieldConfigMap } from "../uilts/TypedFieldConfigMap";
-import { IHouse } from "../uilts/setupGraphQL";
+import { TypedInputFieldConfigMap, TypedFieldConfigMap } from "../utils/TypedFieldConfigMap";
+import { IHouse } from "../utils/setupGraphQL";
 
 interface IMangleArgs {
 	hello: string

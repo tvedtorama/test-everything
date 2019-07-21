@@ -1,5 +1,5 @@
 import { GraphQLSchema, GraphQLObjectType, GraphQLFloat, GraphQLString } from "graphql";
-import { TypedFieldConfigMap } from "../uilts/TypedFieldConfigMap";
+import { TypedFieldConfigMap } from "../utils/TypedFieldConfigMap";
 
 
 export type IHouse = {
