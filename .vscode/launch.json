@@ -5,6 +5,15 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "DebugTSNodeTest",
+			"type": "node",
+			"request": "attach",
+			"port": 9230, // Adjusted using mochaExplorer.debuggerPort
+			"protocol": "inspector",
+			"timeout": 30000,
+			"stopOnEntry": false
+		},
+		{
 			"name": "Attach to Process",
 			"type": "node",
 			"request": "attach",
