@@ -11,7 +11,15 @@ export interface IHouse {
 	owner: string
 }
 
-export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess: TDataAccess}, TDataAccess>(apiUrlPath: string, schema: GraphQLSchema, router: express.Router) {
+const defaultRootValue = {
+	house: <IHouse>{
+		address: "Hola Drive 10",
+		owner: "Mr Duck",
+	},
+	getNumber: () => 10
+}
+
+export const setupGraphQLEndpoint = (apiUrlPath: string, schema: GraphQLSchema, router: express.Router, rootValue: any) => {
 	router.use(apiUrlPath, (req: IGraphQlReqType, _, next) => {
 		if (req.headers && req.headers.authorization)
 			console.log("Good, you know the secret: ", req.headers.authorization)
@@ -22,13 +30,7 @@ export const setupGraphQLEndpoint = function<TRootValue extends {} & {dataAccess
 		(<graphqlHTTP.OptionsResult>{
 			schema,
 			graphiql: true,
-			rootValue: {
-				house: <IHouse>{
-					address: "Hola Drive 10",
-					owner: "Mr Duck",
-				},
-				getNumber: () => 10
-			},
+			rootValue,
 		})))
 }
 
@@ -42,7 +44,10 @@ export const resolveSchemas = (schemas: ISchemaSet<ISupportedSchemas | Promise<I
 	Promise.all(Object.entries(schemas).map(async ([k, v]) => ({k, v: await Promise.resolve(v)}))).
 		then(resolvedSchemaList => resolvedSchemaList.reduce((x, y) => ({...x, [y.k]: y.v}), <ISchemaSet>{}))
 
-export const setupGraphQL = async (schemas: ISchemaSet, resolvers: (schemaSet: ISchemaSet) => IResolversParameter = () => ({})) => {
+/** Takes a set of schemas, and merges them - then sets up things with express.
+ * @param resolvers The resolvers for use when merging schemas.
+ */
+export const setupGraphQL = async (schemas: ISchemaSet, resolvers: (schemaSet: ISchemaSet) => IResolversParameter = () => ({}), rootValue: any = defaultRootValue) => {
 
 	const schema = Some(Object.values(schemas)).
 		flatMap(schemaList => schemaList.length > 1 ?
@@ -59,7 +64,7 @@ export const setupGraphQL = async (schemas: ISchemaSet, resolvers: (schemaSet: I
 
 	const apiUrlPath = "/publicgraphql"
 
-	setupGraphQLEndpoint(apiUrlPath, schema, router)
+	setupGraphQLEndpoint(apiUrlPath, schema, router, rootValue)
 
 	app.use(router)
 

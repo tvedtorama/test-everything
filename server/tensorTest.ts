@@ -4,6 +4,7 @@ import { Iterable } from '@reactivex/ix-es5-cjs'
 import { groupBy, flatMap, scan, scanRight } from '@reactivex/ix-es5-cjs/iterable/pipe/index';
 import { Maybe, Some } from 'monet';
 import { fromPairs } from '../utils/object';
+import {Unpacked} from '../utils/Unpacked'
 
 // Inspired by:
 //  https://towardsdatascience.com/pca-vs-autoencoders-1ba08362f450
@@ -14,12 +15,15 @@ import { fromPairs } from '../utils/object';
 // This tells how to set up models in tf.js:
 //   https://codelabs.developers.google.com/codelabs/tfjs-training-regression/index.html#5
 
-type IIris = typeof irisData[0]
+export type IIris = typeof irisData[0]
+
+const noneLabel = "NONE"
 
 const smap = {
 	"setosa": [0, 0, 1],
 	"versicolor": [0, 1, 0],
 	"virginica": [1, 0, 0],
+	[noneLabel]: [0, 0, 0],
 }
 
 const buildHiddenLayerModel = (model: tf.Sequential) => {
@@ -68,24 +72,24 @@ const scaleVector = (vect: number[], minMax: IMinMax) =>
  * and normalizes all values between [0, 1].  The minMax normalizer
  * vector is returned on every entry.
 */
-export const prepareNormalizedData = () => Some(Iterable.
+export const prepareNormalizedData = (irisData: IIris[] | Iterable<IIris>, minMaxInput?: IMinMax) => Some(Iterable.
 	from(irisData).pipe(
 		groupBy((x: IIris) => x.species),
 		flatMap(x =>
 			x.map(y => ({
-				label: smap[x.key],
+				label: smap[x.key || noneLabel],
 				isTraining: Math.random() <= trainingCut ? true : false,
 				...y,
 			})).map(y => (<IIrisWithVector>{
 				...y,
 				tensorVect: [
 					...inputVector(y),
-					...y.label,
+					...y.label, // Needs to remove the label in training and prediction
 				]
 			}))),
 		scan<IIrisWithVector, IIrisWithMinMax>((x, y) => (<IIrisWithMinMax>{
 			...y,
-			minMax: fromPairs(y.tensorVect.map((zz, i) => [i, minMax(zz, x.minMax, i)]))
+			minMax: minMaxInput || fromPairs(y.tensorVect.map((zz, i) => [i, minMax(zz, x.minMax, i)]))
 		}), <IIrisWithMinMax>{minMax: {}}),
 		scanRight<IIrisWithMinMax, IIrisWithMinMax>((x, y) =>
 			Some(x.minMax || y.minMax).
@@ -126,9 +130,10 @@ export const buildAndTrainModels = (trainingSet: IIrisWithVector[]) => Some({
 	getTrainVector,
 	inputShapeWidth,
 	createInputTensor: (idx: number) => tf.tensor2d(getTrainVector(idx), [1, inputShapeWidth]),
+	createPredictTensor: (vectors: number[][]) => tf.tensor2d(vectors, [vectors.length, inputShapeWidth]),
 	input_X: tf.tensor2d(trainingSet.map(x => x.tensorVect), [trainingSet.length, inputShapeWidth]),
 	model: setupModel(inputShapeWidth),
-})).map(async ({model, input_X, createInputTensor}) => {
+})).map(async ({model, input_X, createInputTensor, createPredictTensor}) => {
 	const batchSize = 16;
 	const epochs = 600;
 
@@ -137,8 +142,9 @@ export const buildAndTrainModels = (trainingSet: IIrisWithVector[]) => Some({
 		epochs,
 		shuffle: true,
 		validationSplit: 0.1,
+		verbose: 0, // avoid crash on missing progress bar, for some reason
 		callbacks: {
-			// onEpochEnd: (...x) => console.log("epoch end", x)
+			onEpochEnd: (epoch, log: tf.Logs) => {console.log("Epoch end", epoch, log.loss)}
 		}
 	})
 
@@ -146,16 +152,63 @@ export const buildAndTrainModels = (trainingSet: IIrisWithVector[]) => Some({
 		model,
 		hiddenModel: buildHiddenLayerModel(model),
 		createInputTensor,
+		createPredictTensor,
 	}
 }).some()
 
+type IModelPack = Unpacked<Unpacked<typeof buildAndTrainModels>>
 
-export const trainAModel = async () => {
+interface IAutoEncoderService {
+	(irisData: IIris[] | Iterable<IIris>): Promise<IAutoEncoderPredictService>
+}
+
+export interface IPredictOutputRow {
+	vx1: number
+	vx2: number
+	inputLabel: string
+}
+
+const convertOutputTensor = (resultTensor: tf.Tensor, labels: Iterable<string>) =>
+	Some(resultTensor.arraySync()).
+		map((resultsAsArray: number[][]) => resultsAsArray.map((rr, i) => (<IPredictOutputRow>{
+			vx1: rr[0],
+			vx2: rr[1],
+			inputLabel: labels.elementAt(i),
+		}))).
+		some()
+
+export interface IAutoEncoderPredictService {
+	predict: (irisData: IIris[] | Iterable<IIris>) => IPredictOutputRow[]
+}
+
+const createPredictService = (models: IModelPack, minMax: IMinMax): IAutoEncoderPredictService =>
+	({
+		predict: (irisData) => Some(prepareNormalizedData(irisData, minMax)).
+			map(normalizedData =>
+				models.createPredictTensor(normalizedData.trainingSet.map(x => x.tensorVect))).
+			map(predictTensor =>
+				models.hiddenModel.predict(predictTensor)).
+			map((res: tf.Tensor) => convertOutputTensor(res, Iterable.from(irisData).map(x => x.species))).
+			some()
+	})
+
+// Test this, pass in data through graphQL and then predict using the same data.
+// Maintain state in the main.ts module.
+export const autoEncoderService: IAutoEncoderService = (irisData) =>
+	Some(prepareNormalizedData(irisData)).
+		map(normalizedData =>
+			buildAndTrainModels(normalizedData.trainingSet).
+				then(models => createPredictService(models,
+					normalizedData.trainingSet[0].minMax))).
+	some()
+
+
+export const trainAndTestAModel = async () => {
 
 	// Needs to plot this
 	// Should *not* include the labels in the training data, that would not make sense when new data arrives.
 
-	const {trainingSet} = prepareNormalizedData()
+	const {trainingSet} = prepareNormalizedData(irisData)
 
 	const {createInputTensor, model, hiddenModel} = await buildAndTrainModels(trainingSet)
 

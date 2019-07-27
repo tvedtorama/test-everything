@@ -19,6 +19,40 @@ The resulting report is saved in `./coverage` (.gitignore)
 curl -X POST http://127.0.0.1:3010/service --data '{"greeting":"Rabalderpuddding"}' --header "Content-Type: application/json" --header "x-correlation-id: yawadubla" -w "\n"
 ```
 
+## GraphQL Enabled Tensorflow Autoencoder
+
+Train using this mutation:
+
+```graphql
+mutation($input: TrainMutationInput!) {
+  trainMutation(input: $input) {
+    ok
+    clientMutationId
+  }
+}
+```
+
+`input` being a variable defined like this:
+
+```
+{
+  "input": {
+    "data": [{"sepalLength": 5.1 ...
+```
+
+Predict using this query, `$rows` simply the Iris data to run.
+
+```graphql
+query($rows: [PredictInput]) {
+  pip
+  predict(params: $rows) {
+    vx1
+    vx2
+    inputLabel
+  }
+}
+```
+
 
 ## Do the graphql stitching
 
