@@ -29,7 +29,7 @@ export const tranPredictStateMachine = function*(): IterableIterator<{predict: (
 	}
 }
 
-export default () => {
+export default (fn: (app) => void) => {
 	const gen = tranPredictStateMachine()
 	setupGraphQL({main: createSchema()}, undefined, {
 		pip: async () => "papp",
@@ -39,5 +39,5 @@ export default () => {
 		train: async ({data}) => Some(gen.next().value).
 			map(service =>
 				service.train(data)).some()
-	})
+	}, fn)
 }

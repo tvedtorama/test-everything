@@ -1,8 +1,9 @@
 const path = require('path');
+const webpack = require('webpack');
 
-module.exports = {
+module.exports = env => ({
   entry: {
-	  index: './gui/index.tsx',
+	  index: ['webpack-hot-middleware/client', './gui/index.tsx'],
 	  vendor: ['react', 'react-dom', 'recharts']
 	},
   devtool: 'inline-source-map',
@@ -16,11 +17,17 @@ module.exports = {
       }
     ]
   },
+  plugins: [
+	new webpack.HotModuleReplacementPlugin(),
+    // Use NoErrorsPlugin for webpack 1.x
+    new webpack.NoEmitOnErrorsPlugin()
+  ],
   resolve: {
     extensions: [ '.tsx', '.ts', '.js' ]
   },
   output: {
 	filename: '[name]_bundle.js',
-    path: path.resolve(__dirname, 'dist')
+	path: path.resolve(__dirname, 'dist'),
+	publicPath: '/static/'
   }
-};
+});

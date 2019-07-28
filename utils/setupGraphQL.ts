@@ -49,7 +49,7 @@ export const resolveSchemas = (schemas: ISchemaSet<ISupportedSchemas | Promise<I
 /** Takes a set of schemas, and merges them - then sets up things with express.
  * @param resolvers The resolvers for use when merging schemas.
  */
-export const setupGraphQL = async (schemas: ISchemaSet, resolvers: (schemaSet: ISchemaSet) => IResolversParameter = () => ({}), rootValue: any = defaultRootValue) => {
+export const setupGraphQL = async (schemas: ISchemaSet, resolvers: (schemaSet: ISchemaSet) => IResolversParameter = () => ({}), rootValue: any = defaultRootValue, appCallback: (app) => void = () => {}) => {
 
 	const schema = Some(Object.values(schemas)).
 		flatMap(schemaList => schemaList.length > 1 ?
@@ -76,6 +76,8 @@ export const setupGraphQL = async (schemas: ISchemaSet, resolvers: (schemaSet: I
 	setupAdminGui(router)
 
 	app.use(router)
+
+	appCallback(app)
 
 	const port = parseInt(process.env["port"] || "3000")
 
