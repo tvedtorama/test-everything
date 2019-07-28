@@ -1,8 +1,10 @@
 import * as express from 'express'
 import * as graphqlHTTP from 'express-graphql'
-import { GraphQLSchema, parse, DocumentNode } from 'graphql';
+import { GraphQLSchema } from 'graphql';
 import { mergeSchemas, IResolversParameter, makeExecutableSchema } from 'graphql-tools';
-import {Maybe, Some} from 'monet'
+import { Some} from 'monet'
+import { join } from 'path';
+import {setupAdminGui} from './expressHandlers/setupAdminGui'
 
 type IGraphQlReqType = express.Request & {files: any[], logs: {logs: any[]}}
 
@@ -65,6 +67,13 @@ export const setupGraphQL = async (schemas: ISchemaSet, resolvers: (schemaSet: I
 	const apiUrlPath = "/publicgraphql"
 
 	setupGraphQLEndpoint(apiUrlPath, schema, router, rootValue)
+
+	const appRoot = join(__dirname, "../../")
+	console.log("CurDir and appRoot: ", __dirname, appRoot)
+	app.use("/static", express.static(appRoot + "dist"));
+	app.use("/img", express.static(appRoot + "public/img"));
+
+	setupAdminGui(router)
 
 	app.use(router)
 
