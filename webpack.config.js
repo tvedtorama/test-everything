@@ -3,7 +3,7 @@ const webpack = require('webpack');
 
 module.exports = env => ({
 	entry: {
-		index: ['react-hot-loader/patch', 'webpack-hot-middleware/client', './gui/index.tsx'],
+		index: ['babel-polyfill', 'react-hot-loader/patch', 'webpack-hot-middleware/client', './gui/index.tsx'],
 		vendor: ['react', 'react-dom', 'recharts']
 	},
 	devtool: 'inline-source-map',
