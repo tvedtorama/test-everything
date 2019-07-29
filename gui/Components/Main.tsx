@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { LineChart, XAxis, YAxis, CartesianGrid, Line } from 'recharts';
-import { Example } from './Example';
+import {TrainDataGrid} from './TrainDataGrid'
 
 const data = [
 	{
@@ -35,6 +35,6 @@ export const Main = (props: { store: any }) => {
 			<Line type="monotone" dataKey="uv" stroke="#8884d8" />
 			<Line type="monotone" dataKey="pv" stroke="#82ca9d" />
 		</LineChart>
-		<Example />
+		<TrainDataGrid />
 	</div>)
 }

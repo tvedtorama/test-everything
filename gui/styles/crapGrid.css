@@ -1,0 +1,6 @@
+/* This file was needed for styling the cells of the react-data-grid */
+
+.abdul-ibrahim {
+	text-align: right;
+	padding-left: 0em; /* Without this, parts of text disappear */
+}
