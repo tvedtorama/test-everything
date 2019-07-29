@@ -5,12 +5,24 @@ import { IIris, IPredictOutputRow } from "../server/tensorTest";
 import { Some } from "monet";
 
 const predictInputFields = <TypedInputFieldConfigMap<IIris>>{
-	petalLength: {type: new GraphQLNonNull(GraphQLFloat)},
-	petalWidth: {type: new GraphQLNonNull(GraphQLFloat)},
-	sepalLength: {type: new GraphQLNonNull(GraphQLFloat)},
-	sepalWidth: {type: new GraphQLNonNull(GraphQLFloat)},
-	species: {type: GraphQLString},
+	petalLength: { type: new GraphQLNonNull(GraphQLFloat) },
+	petalWidth: { type: new GraphQLNonNull(GraphQLFloat) },
+	sepalLength: { type: new GraphQLNonNull(GraphQLFloat) },
+	sepalWidth: { type: new GraphQLNonNull(GraphQLFloat) },
+	species: { type: GraphQLString },
 }
+
+const irisRow = new GraphQLObjectType({
+	name: "IrisData",
+	fields: () => <TypedFieldConfigMap<IIris>>{
+		petalLength: { type: GraphQLFloat },
+		petalWidth: { type: GraphQLFloat },
+		sepalLength: { type: GraphQLFloat },
+		sepalWidth: { type: GraphQLFloat },
+		species: { type: GraphQLString },
+	}
+})
+
 
 const predictInput = new GraphQLInputObjectType({
 	name: "PredictInput",
@@ -35,12 +47,12 @@ const predictOutput = new GraphQLObjectType({
 const predictSchema = new GraphQLObjectType({
 	name: 'Query',
 	fields: () => ({
-		pip: {
-			type: GraphQLString, // This field, under `Query` will resolve using the rootValue
+		irisData: {
+			type: new GraphQLList(irisRow)
 		},
 		predict: {
 			args: {
-				params: {type: new GraphQLList(predictInput)}
+				params: { type: new GraphQLList(predictInput) }
 			},
 			type: new GraphQLList(predictOutput),
 			// arguments, resolve
@@ -51,12 +63,12 @@ const predictSchema = new GraphQLObjectType({
 const trainMutation = mutationWithClientMutationId({
 	name: "TrainMutation",
 	inputFields: () => ({
-		data: {type: new GraphQLList(predictInput)}
+		data: { type: new GraphQLList(predictInput) }
 	}),
 	outputFields: () => ({
-		ok: {type: GraphQLBoolean}
+		ok: { type: GraphQLBoolean }
 	}),
-	mutateAndGetPayload: async (args, _2, {rootValue}) => Some(await rootValue.train(args)).
+	mutateAndGetPayload: async (args, _2, { rootValue }) => Some(await rootValue.train(args)).
 		map(result => ({
 			ok: result,
 		})).some(),

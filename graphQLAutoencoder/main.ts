@@ -2,6 +2,7 @@ import { setupGraphQL } from "../utils/setupGraphQL";
 import { createSchema } from "./createSchema";
 import { IIris, autoEncoderService, IAutoEncoderPredictService } from "../server/tensorTest";
 import { Some } from "monet";
+import * as irisData from '../data/iris.json'
 
 // Node: Should make a dictionary of these, so the user could train different models
 export const tranPredictStateMachine = function*(): IterableIterator<{predict: (a: IIris[]) => any, train: (a: IIris[]) => any}> {
@@ -32,7 +33,7 @@ export const tranPredictStateMachine = function*(): IterableIterator<{predict: (
 export default (fn: (app) => void) => {
 	const gen = tranPredictStateMachine()
 	setupGraphQL({main: createSchema()}, undefined, {
-		pip: async () => "papp",
+		irisData: async () => irisData,
 		predict: ({params}: {params: IIris[]}) => Some(gen.next().value).
 			map(service =>
 				service.predict(params)).some(),
