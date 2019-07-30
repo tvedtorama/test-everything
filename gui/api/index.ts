@@ -1,12 +1,11 @@
 import { IIris } from "../../server/tensorTest";
 import {default as Axios} from 'axios'
 import * as Snippets from './graphQLSnippets'
-import { omit } from "../../utils/object";
 
 export interface IApi {
 	loadIrisData: () => Promise<IIris[]>
-	train: (irisData: IIris[]) => Promise<boolean>
-	predict: (irisData: IIris[]) => Promise<{vx1: number}[]>
+	train: (trainId: string, irisData: IIris[]) => Promise<boolean>
+	predict: (trainId: string, irisData: IIris[]) => Promise<{vx1: number}[]>
 }
 
 const url = '/publicgraphql'
@@ -19,21 +18,23 @@ export const api: IApi = {
 		})
 		return result.data.data.irisData
 	},
-	predict: async (irisData) => {
+	predict: async (trainId, irisData) => {
 		const result = await Axios.post(url, {
 			query: Snippets.predict,
 			variables: {
+				trainId,
 				rows: irisData
 			}
 		})
 		return result.data.data.predict
 	},
-	train: async (irisData) => {
+	train: async (trainId, irisData) => {
 		const result = await Axios.post(url, {
 			query: Snippets.train,
 			variables: {
 				input: {
-					data: irisData // .map(x => omit(x, ["species"]))
+					trainId,
+					rows: irisData // .map(x => omit(x, ["species"]))
 				}
 			}
 		})

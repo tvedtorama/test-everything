@@ -10,8 +10,8 @@ query {
 }`
 
 export const predict = `
-query($rows: [PredictInput]) {
-	predict(params: $rows) {
+query($rows: [PredictInput]!, $trainId: String!) {
+	predict(rows: $rows, trainId: $trainId) {
 	  vx1
 	  vx2
 	  inputLabel

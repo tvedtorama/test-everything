@@ -1,11 +1,13 @@
 import { setupGraphQL } from "../utils/setupGraphQL";
 import { createSchema } from "./createSchema";
 import { IIris, autoEncoderService, IAutoEncoderPredictService } from "../server/tensorTest";
-import { Some } from "monet";
+import { Some, Maybe, Nothing } from "monet";
 import * as irisData from '../data/iris.json'
 
-// Node: Should make a dictionary of these, so the user could train different models
-export const tranPredictStateMachine = function*(): IterableIterator<{predict: (a: IIris[]) => any, train: (a: IIris[]) => any}> {
+type IStateMachineType = IterableIterator<{predict: (a: IIris[]) => any, train: (a: IIris[]) => any}>
+
+// Note: This state machine is somewhat redundant in that there is now also a dictionary of trained instances.
+export const trainPredictStateMachine = function*(): IStateMachineType {
 	let predicter: IAutoEncoderPredictService = null
 	while (!predicter)
 		try {
@@ -30,15 +32,20 @@ export const tranPredictStateMachine = function*(): IterableIterator<{predict: (
 	}
 }
 
+let generators = new Map<string, IStateMachineType>()
+
+const getOrAddGenerator = (trainId, allowCreate?: true) => Maybe.fromUndefined(generators.get(trainId)).
+	catchMap(() => allowCreate ? Some(trainPredictStateMachine()).map(gen => (generators.set(trainId, gen), gen)) : Nothing()).
+	catchMap(() => {throw new Error("trainId not found")})
+
 export default (fn: (app) => void) => {
-	const gen = tranPredictStateMachine()
 	setupGraphQL({main: createSchema()}, undefined, {
 		irisData: async () => irisData,
-		predict: ({params}: {params: IIris[]}) => Some(gen.next().value).
+		predict: ({rows, trainId}: {rows: IIris[], trainId: string}) => getOrAddGenerator(trainId).map(gen => gen.next().value).
 			map(service =>
-				service.predict(params)).some(),
-		train: async ({data}) => Some(gen.next().value).
+				service.predict(rows)).some(),
+		train: async ({rows, trainId}) => getOrAddGenerator(trainId, true).map(gen => gen.next().value).
 			map(service =>
-				service.train(data)).some()
+				service.train(rows)).some()
 	}, fn)
 }

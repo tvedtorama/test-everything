@@ -52,7 +52,8 @@ const predictSchema = new GraphQLObjectType({
 		},
 		predict: {
 			args: {
-				params: { type: new GraphQLList(predictInput) }
+				rows: { type: new GraphQLNonNull(new GraphQLList(predictInput)) },
+				trainId: { type: new GraphQLNonNull(GraphQLString) },
 			},
 			type: new GraphQLList(predictOutput),
 			// arguments, resolve
@@ -63,7 +64,8 @@ const predictSchema = new GraphQLObjectType({
 const trainMutation = mutationWithClientMutationId({
 	name: "TrainMutation",
 	inputFields: () => ({
-		data: { type: new GraphQLList(predictInput) }
+		rows: { type: new GraphQLNonNull(new GraphQLList(predictInput)) },
+		trainId: { type: new GraphQLNonNull(GraphQLString) }
 	}),
 	outputFields: () => ({
 		ok: { type: GraphQLBoolean }

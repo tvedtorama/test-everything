@@ -29,6 +29,7 @@
     "graphql-tools": "^4.0.4",
     "lodash.memoize": "^4.1.2",
     "monet": "^0.9.0",
+    "nanoid": "^2.0.3",
     "recharts": "^1.6.2",
     "winston": "^3.2.1"
   },
@@ -48,6 +49,7 @@
     "@types/graphql": "^14.2.0",
     "@types/lodash.memoize": "^4.1.6",
     "@types/mocha": "^5.2.6",
+    "@types/nanoid": "^2.0.0",
     "@types/react": "^16.8.23",
     "@types/react-data-grid": "^4.0.3",
     "@types/react-dom": "^16.8.5",
