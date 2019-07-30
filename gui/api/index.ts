@@ -6,6 +6,7 @@ import { omit } from "../../utils/object";
 export interface IApi {
 	loadIrisData: () => Promise<IIris[]>
 	train: (irisData: IIris[]) => Promise<boolean>
+	predict: (irisData: IIris[]) => Promise<{vx1: number}[]>
 }
 
 const url = '/publicgraphql'
@@ -17,6 +18,15 @@ export const api: IApi = {
 			variables: {}
 		})
 		return result.data.data.irisData
+	},
+	predict: async (irisData) => {
+		const result = await Axios.post(url, {
+			query: Snippets.predict,
+			variables: {
+				rows: irisData
+			}
+		})
+		return result.data.data.predict
 	},
 	train: async (irisData) => {
 		const result = await Axios.post(url, {

@@ -10,7 +10,7 @@ export const Section = styled('div')({
 
 export const Button = styled.button`
 	color: white;
-	background: ${(props: any) => props.primary ? "blue" : "orange"};
+	background: ${(props: any) => props.disabled ? "gray" : props.primary ? "blue" : "orange"};
 	margin: 0.1em;
 	width: 15em;
 `
