@@ -26,6 +26,8 @@ const smap = {
 	[noneLabel]: [0, 0, 0],
 }
 
+export type IIrisLabelSet = keyof typeof smap
+
 const buildHiddenLayerModel = (model: tf.Sequential) => {
 	const [hidden, ...outputsAndOthers] = model.layers
 	return tf.model({

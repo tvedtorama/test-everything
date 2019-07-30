@@ -1,11 +1,12 @@
-import { IIris } from "../../server/tensorTest";
+import { IIris, IPredictOutputRow } from "../../server/tensorTest";
 import {default as Axios} from 'axios'
 import * as Snippets from './graphQLSnippets'
+
 
 export interface IApi {
 	loadIrisData: () => Promise<IIris[]>
 	train: (trainId: string, irisData: IIris[]) => Promise<boolean>
-	predict: (trainId: string, irisData: IIris[]) => Promise<{vx1: number}[]>
+	predict: (trainId: string, irisData: IIris[]) => Promise<IPredictOutputRow[]>
 }
 
 const url = '/publicgraphql'

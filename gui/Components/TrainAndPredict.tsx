@@ -1,15 +1,16 @@
 import * as React from 'react'
 import {Section, Button} from '../styles'
-import { IIris } from '../../server/tensorTest';
+import { IIris, IPredictOutputRow } from '../../server/tensorTest';
 import { api } from '../api';
 import { useState } from 'react';
 const nanoId: () => string = require('nanoid')
 
 interface IProps {
 	irisData: IIris[]
+	setPredictData: (p: IPredictOutputRow[]) => void
 }
 
-export const TrainAndResults = (props: IProps) => {
+export const TrainAndPredict = (props: IProps) => {
 	const [trainId, setTrainId] = useState(nanoId())
 	const [state, setState] = useState<"TRAIN" | "TRAINING" | "PREDICT" | "PREDICTING">("TRAIN")
 
@@ -35,6 +36,7 @@ export const TrainAndResults = (props: IProps) => {
 					setState("PREDICTING")
 					try {
 						const result = await api.predict(trainId, props.irisData)
+						props.setPredictData(result)
 					} finally {
 						setState("PREDICT")
 					}
