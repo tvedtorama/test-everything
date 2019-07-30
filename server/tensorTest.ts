@@ -135,7 +135,7 @@ export const buildAndTrainModels = (trainingSet: IIrisWithVector[]) => Some({
 	model: setupModel(inputShapeWidth),
 })).map(async ({model, input_X, createInputTensor, createPredictTensor}) => {
 	const batchSize = 16;
-	const epochs = 600;
+	const epochs = 350;
 
 	await model.fit(input_X, input_X, {
 		batchSize,
