@@ -15,6 +15,9 @@ import {Unpacked} from '../utils/Unpacked'
 // This tells how to set up models in tf.js:
 //   https://codelabs.developers.google.com/codelabs/tfjs-training-regression/index.html#5
 
+const batchSize = 16;
+const epochs = 400;
+
 export type IIris = typeof irisData[0]
 
 const noneLabel = "NONE"
@@ -74,7 +77,7 @@ const scaleVector = (vect: number[], minMax: IMinMax) =>
  * and normalizes all values between [0, 1].  The minMax normalizer
  * vector is returned on every entry.
 */
-export const prepareNormalizedData = (irisData: IIris[] | Iterable<IIris>, minMaxInput?: IMinMax) => Some(Iterable.
+export const prepareNormalizedData = (irisData: IIris[] | Iterable<IIris>, includeLabels?: true, minMaxInput?: IMinMax) => Some(Iterable.
 	from(irisData).pipe(
 		groupBy((x: IIris) => x.species),
 		flatMap(x =>
@@ -86,7 +89,7 @@ export const prepareNormalizedData = (irisData: IIris[] | Iterable<IIris>, minMa
 				...y,
 				tensorVect: [
 					...inputVector(y),
-					...y.label, // Needs to remove the label in training and prediction
+					...(includeLabels ? y.label : []), // Needs to remove the label in training and prediction
 				]
 			}))),
 		scan<IIrisWithVector, IIrisWithMinMax>((x, y) => (<IIrisWithMinMax>{
@@ -111,8 +114,8 @@ const hiddenLayerWidth = 2
 
 const setupModel = (inputShapeWidth: number) => {
 	const model = tf.sequential();
-	model.add(tf.layers.dense({ units: hiddenLayerWidth, inputShape: [inputShapeWidth] }));
-	model.add(tf.layers.dense({ units: inputShapeWidth, inputShape: [hiddenLayerWidth] }));
+	model.add(tf.layers.dense({ units: hiddenLayerWidth, inputShape: [inputShapeWidth], activation: "linear"}));
+	model.add(tf.layers.dense({ units: inputShapeWidth, inputShape: [hiddenLayerWidth], activation: "linear"}));
 
 	model.compile({
 		optimizer: tf.train.adam(),
@@ -123,7 +126,7 @@ const setupModel = (inputShapeWidth: number) => {
 	return model
 }
 
-export const buildAndTrainModels = (trainingSet: IIrisWithVector[]) => Some({
+export const buildAndTrainModels = (trainingSet: IIrisWithVector[], includeLabels?: true) => Some({
 	getTrainVector: (idx: number) => trainingSet[idx].tensorVect,
 }).map(({getTrainVector}) => ({
 	getTrainVector,
@@ -136,8 +139,6 @@ export const buildAndTrainModels = (trainingSet: IIrisWithVector[]) => Some({
 	input_X: tf.tensor2d(trainingSet.map(x => x.tensorVect), [trainingSet.length, inputShapeWidth]),
 	model: setupModel(inputShapeWidth),
 })).map(async ({model, input_X, createInputTensor, createPredictTensor}) => {
-	const batchSize = 16;
-	const epochs = 350;
 
 	await model.fit(input_X, input_X, {
 		batchSize,
@@ -155,6 +156,7 @@ export const buildAndTrainModels = (trainingSet: IIrisWithVector[]) => Some({
 		hiddenModel: buildHiddenLayerModel(model),
 		createInputTensor,
 		createPredictTensor,
+		includeLabels,
 	}
 }).some()
 
@@ -185,7 +187,7 @@ export interface IAutoEncoderPredictService {
 
 const createPredictService = (models: IModelPack, minMax: IMinMax): IAutoEncoderPredictService =>
 	({
-		predict: (irisData) => Some(prepareNormalizedData(irisData, minMax)).
+		predict: (irisData) => Some(prepareNormalizedData(irisData, models.includeLabels, minMax)).
 			map(normalizedData =>
 				models.createPredictTensor(normalizedData.trainingSet.map(x => x.tensorVect))).
 			map(predictTensor =>
@@ -210,7 +212,7 @@ export const trainAndTestAModel = async () => {
 	// Needs to plot this
 	// Should *not* include the labels in the training data, that would not make sense when new data arrives.
 
-	const {trainingSet} = prepareNormalizedData(irisData)
+	const {trainingSet} = prepareNormalizedData(irisData, true)
 
 	const {createInputTensor, model, hiddenModel} = await buildAndTrainModels(trainingSet)
 
