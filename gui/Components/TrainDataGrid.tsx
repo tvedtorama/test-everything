@@ -42,8 +42,12 @@ const columns: (Column<any> & {key: keyof IIris | "index"})[] = [{
 	width: textColWidth,
 }]
 
-export const TrainDataGrid = (props) => {
-	const [irisData, setIrisData] = useState<IIris[]>([])
+interface IProps {
+	irisData: IIris[]
+	setIrisData: (iris: IIris[]) => void
+}
+
+export const TrainDataGrid = ({irisData, setIrisData}: IProps) => {
 
 	return (<Section>
 			<ReactDataGrid minWidth={1000}
@@ -51,7 +55,7 @@ export const TrainDataGrid = (props) => {
 				rowGetter={(index) => ({...irisData[index], index})}
 				rowsCount={irisData.length} />
 
-			<Button primary style={{width: "15em"}} onClick={() => {
+			<Button onClick={() => {
 					api.loadIrisData().then(data => setIrisData(data))
 				}}>
 				Load Iris Data

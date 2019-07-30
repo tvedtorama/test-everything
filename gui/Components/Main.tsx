@@ -1,6 +1,9 @@
 import * as React from 'react'
 import { LineChart, XAxis, YAxis, CartesianGrid, Line } from 'recharts';
 import {TrainDataGrid} from './TrainDataGrid'
+import { useState } from 'react';
+import { IIris } from '../../server/tensorTest';
+import { TrainAndResults } from './TrainAndResults';
 
 const data = [
 	{
@@ -27,6 +30,8 @@ const data = [
 ];
 
 export const Main = (props: { store: any }) => {
+	const [irisData, setIrisData] = useState<IIris[]>([])
+
 	return (<div className="coolness">
 		<LineChart width={500} height={300} data={data}>
 			<XAxis dataKey="name" />
@@ -35,6 +40,7 @@ export const Main = (props: { store: any }) => {
 			<Line type="monotone" dataKey="uv" stroke="#8884d8" />
 			<Line type="monotone" dataKey="pv" stroke="#82ca9d" />
 		</LineChart>
-		<TrainDataGrid />
+		<TrainDataGrid {...{irisData, setIrisData}}/>
+		<TrainAndResults {...{irisData}} />
 	</div>)
 }

@@ -9,3 +9,12 @@ query {
 	}
 }`
 
+export const train = `
+mutation($input: TrainMutationInput!) {
+	trainMutation(input: $input) {
+	  ok
+	  clientMutationId
+	}
+  }
+
+`
